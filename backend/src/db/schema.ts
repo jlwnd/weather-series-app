@@ -11,3 +11,6 @@ export const sessions = pgTable('sessions', {
   adminId: integer('admin_id').notNull().references(() => admins.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 });
+
+export type Admin = typeof admins.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
