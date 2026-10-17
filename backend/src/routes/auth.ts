@@ -33,21 +33,17 @@ export default async function authRoutes(app: FastifyInstance) {
     },
   );
 
-  r.post("/api/auth/logout", async (req, reply) => {
-    const auth = await requireAdmin(req, reply);
-    if (!auth) return;
-    await authService.logout(auth.token);
+  r.post("/api/auth/logout", { onRequest: requireAdmin }, async (req, reply) => {
+    await authService.logout(req.admin!.token);
     return reply.code(204).send();
   });
 
   r.put(
     "/api/auth/password",
-    { schema: { body: PasswordChangeDto } },
+    { onRequest: requireAdmin, schema: { body: PasswordChangeDto } },
     async (req, reply) => {
-      const auth = await requireAdmin(req, reply);
-      if (!auth) return;
       const ok = await authService.changePassword(
-        auth.adminId,
+        req.admin!.adminId,
         req.body.currentPassword,
         req.body.newPassword,
       );

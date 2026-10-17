@@ -1,0 +1,28 @@
+meta {
+  name: Create series - invalid range (422)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/series
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Zly zakres",
+    "minValue": 100,
+    "maxValue": 100,
+    "color": "#1f77b4"
+  }
+}
+
+assert {
+  res.status: eq 422
+}

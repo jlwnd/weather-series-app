@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, varchar, text, timestamp, doublePrecision } from 'drizzle-orm/pg-core';
 
 export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),
@@ -12,5 +12,14 @@ export const sessions = pgTable('sessions', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 });
 
+export const series = pgTable('series', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  minValue: doublePrecision('min_value').notNull(),
+  maxValue: doublePrecision('max_value').notNull(),
+  color: varchar('color', { length: 7 }).notNull(),
+});
+
 export type Admin = typeof admins.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type Series = typeof series.$inferSelect;

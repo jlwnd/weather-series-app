@@ -1,0 +1,35 @@
+meta {
+  name: Create series
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/series
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Warszawa",
+    "minValue": -30,
+    "maxValue": 45,
+    "color": "#1f77b4"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.headers.location: isDefined
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("seriesId", res.getBody().id);
+  }
+}
