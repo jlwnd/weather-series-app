@@ -25,8 +25,7 @@ po czasie i seriach). Zalogowany administrator zarządza seriami i czujnikami.
 | `backend/`   | Serwer Fastify, API, autoryzacja                 |
 | `frontend/`  | Aplikacja SPA (React)                            |
 | `generator/` | Emulator czujnika (CLI) wysyłający wyniki do API |
-| `db/`        | Diagram ERD                                      |
-| `docs/`      | Dokumentacja projektu (źródło PDF)               |
+| `docs/`      | Dokumentacja projektu (źródło PDF, diagram ERD)  |
 
 ## Uruchomienie lokalne
 
