@@ -1,0 +1,14 @@
+meta {
+  name: List series
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/series
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Update series
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/series/{{seriesId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Warszawa (zmieniona)",
+    "minValue": -25,
+    "maxValue": 40,
+    "color": "#ff7f0e"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.color: eq #ff7f0e
+}

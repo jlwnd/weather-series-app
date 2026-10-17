@@ -1,0 +1,18 @@
+meta {
+  name: Delete series
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/series/{{seriesId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 204
+}
