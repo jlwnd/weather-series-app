@@ -27,12 +27,13 @@ export default async function seriesRoutes(app: FastifyInstance) {
 
   r.post(
     "/api/series",
-    { schema: { body: SeriesInputDto, response: { 201: SeriesDto, 422: ErrorDto } } },
+    {
+      onRequest: requireAdmin,
+      schema: { body: SeriesInputDto, response: { 201: SeriesDto, 401: ErrorDto, 422: ErrorDto } },
+    },
     async (req, reply) => {
       if (req.body.minValue >= req.body.maxValue)
         return reply.code(422).send({ message: "minValue must be less than maxValue" });
-      const auth = await requireAdmin(req, reply);
-      if (!auth) return;
       const created = await seriesRepository.insert(req.body);
       return reply.code(201).header("Location", `/api/series/${created.id}`).send(created);
     },
@@ -41,17 +42,16 @@ export default async function seriesRoutes(app: FastifyInstance) {
   r.put(
     "/api/series/:seriesId",
     {
+      onRequest: requireAdmin,
       schema: {
         params: SeriesParamsDto,
         body: SeriesInputDto,
-        response: { 200: SeriesDto, 404: ErrorDto, 422: ErrorDto },
+        response: { 200: SeriesDto, 401: ErrorDto, 404: ErrorDto, 422: ErrorDto },
       },
     },
     async (req, reply) => {
       if (req.body.minValue >= req.body.maxValue)
         return reply.code(422).send({ message: "minValue must be less than maxValue" });
-      const auth = await requireAdmin(req, reply);
-      if (!auth) return;
       // ponytail: 409 gdy nowy przedział wyklucza istniejące wyniki — dopięte, gdy powstanie tabela measurements
       const updated = await seriesRepository.update(req.params.seriesId, req.body);
       if (!updated) return reply.code(404).send({ message: "Series not found" });
@@ -61,10 +61,8 @@ export default async function seriesRoutes(app: FastifyInstance) {
 
   r.delete(
     "/api/series/:seriesId",
-    { schema: { params: SeriesParamsDto } },
+    { onRequest: requireAdmin, schema: { params: SeriesParamsDto } },
     async (req, reply) => {
-      const auth = await requireAdmin(req, reply);
-      if (!auth) return;
       const deleted = await seriesRepository.delete(req.params.seriesId);
       if (!deleted) return reply.code(404).send({ message: "Series not found" });
       return reply.code(204).send();
