@@ -52,6 +52,7 @@ export const authService = {
       adminId,
       await argon2.hash(newPassword),
     );
+    await sessionRepository.deleteByAdminId(adminId);
     return true;
   },
 };

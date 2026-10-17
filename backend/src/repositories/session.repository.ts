@@ -21,4 +21,8 @@ export const sessionRepository = {
   deleteByTokenHash: async (tokenHash: string): Promise<void> => {
     await db.delete(sessions).where(eq(sessions.tokenHash, tokenHash));
   },
+
+  deleteByAdminId: async (adminId: number): Promise<void> => {
+    await db.delete(sessions).where(eq(sessions.adminId, adminId));
+  },
 };
