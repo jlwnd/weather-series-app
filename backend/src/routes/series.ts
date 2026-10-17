@@ -4,7 +4,8 @@ import { z } from "zod";
 import { requireAdmin } from "../lib/auth.ts";
 import { seriesRepository } from "../repositories/series.repository.ts";
 import { SeriesInputDto, SeriesDto, SeriesParamsDto } from "../dto/series.ts";
-import { ErrorDto } from "../dto/common.ts";
+import { ProblemDto } from "../dto/common.ts";
+import { notFound, unprocessable } from "../lib/problem.ts";
 
 export default async function seriesRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
@@ -17,10 +18,15 @@ export default async function seriesRoutes(app: FastifyInstance) {
 
   r.get(
     "/api/series/:seriesId",
-    { schema: { params: SeriesParamsDto, response: { 200: SeriesDto, 404: ErrorDto } } },
-    async (req, reply) => {
+    {
+      schema: {
+        params: SeriesParamsDto,
+        response: { 200: SeriesDto, 404: ProblemDto },
+      },
+    },
+    async (req) => {
       const found = await seriesRepository.findById(req.params.seriesId);
-      if (!found) return reply.code(404).send({ message: "Series not found" });
+      if (!found) throw notFound("Series not found");
       return found;
     },
   );
@@ -29,13 +35,19 @@ export default async function seriesRoutes(app: FastifyInstance) {
     "/api/series",
     {
       onRequest: requireAdmin,
-      schema: { body: SeriesInputDto, response: { 201: SeriesDto, 401: ErrorDto, 422: ErrorDto } },
+      schema: {
+        body: SeriesInputDto,
+        response: { 201: SeriesDto, 401: ProblemDto, 422: ProblemDto },
+      },
     },
     async (req, reply) => {
       if (req.body.minValue >= req.body.maxValue)
-        return reply.code(422).send({ message: "minValue must be less than maxValue" });
+        throw unprocessable("minValue must be less than maxValue");
       const created = await seriesRepository.insert(req.body);
-      return reply.code(201).header("Location", `/api/series/${created.id}`).send(created);
+      return reply
+        .code(201)
+        .header("Location", `/api/series/${created.id}`)
+        .send(created);
     },
   );
 
@@ -46,15 +58,23 @@ export default async function seriesRoutes(app: FastifyInstance) {
       schema: {
         params: SeriesParamsDto,
         body: SeriesInputDto,
-        response: { 200: SeriesDto, 401: ErrorDto, 404: ErrorDto, 422: ErrorDto },
+        response: {
+          200: SeriesDto,
+          401: ProblemDto,
+          404: ProblemDto,
+          422: ProblemDto,
+        },
       },
     },
-    async (req, reply) => {
+    async (req) => {
       if (req.body.minValue >= req.body.maxValue)
-        return reply.code(422).send({ message: "minValue must be less than maxValue" });
+        throw unprocessable("minValue must be less than maxValue");
       // ponytail: 409 gdy nowy przedział wyklucza istniejące wyniki — dopięte, gdy powstanie tabela measurements
-      const updated = await seriesRepository.update(req.params.seriesId, req.body);
-      if (!updated) return reply.code(404).send({ message: "Series not found" });
+      const updated = await seriesRepository.update(
+        req.params.seriesId,
+        req.body,
+      );
+      if (!updated) throw notFound("Series not found");
       return updated;
     },
   );
@@ -64,7 +84,7 @@ export default async function seriesRoutes(app: FastifyInstance) {
     { onRequest: requireAdmin, schema: { params: SeriesParamsDto } },
     async (req, reply) => {
       const deleted = await seriesRepository.delete(req.params.seriesId);
-      if (!deleted) return reply.code(404).send({ message: "Series not found" });
+      if (!deleted) throw notFound("Series not found");
       return reply.code(204).send();
     },
   );
