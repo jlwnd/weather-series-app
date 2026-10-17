@@ -1,0 +1,30 @@
+{
+  "name": "weather-series-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=../.env --watch src/index.ts",
+    "start": "node src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file=../.env src/db/migrate.ts",
+    "migrate:prod": "node src/db/migrate.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@fastify/helmet": "^12.0.1",
+    "@fastify/static": "^8.0.1",
+    "argon2": "^0.41.1",
+    "drizzle-orm": "^0.36.4",
+    "fastify": "^5.1.0",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.6.3",
+    "@types/node": "^22.9.0"
+  }
+}
