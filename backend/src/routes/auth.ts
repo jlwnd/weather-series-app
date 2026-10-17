@@ -3,7 +3,8 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { requireAdmin } from "../lib/auth.ts";
 import { authService } from "../services/auth.service.ts";
 import { LoginDto, LoginResponseDto, PasswordChangeDto } from "../dto/auth.ts";
-import { ErrorDto } from "../dto/common.ts";
+import { ProblemDto } from "../dto/common.ts";
+import { unauthorized, forbidden } from "../lib/problem.ts";
 
 export default async function authRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
@@ -13,7 +14,7 @@ export default async function authRoutes(app: FastifyInstance) {
     {
       schema: {
         body: LoginDto,
-        response: { 200: LoginResponseDto, 401: ErrorDto },
+        response: { 200: LoginResponseDto, 401: ProblemDto },
       },
     },
     async (req, reply) => {
@@ -21,10 +22,7 @@ export default async function authRoutes(app: FastifyInstance) {
         req.body.username,
         req.body.password,
       );
-      if (!result)
-        return reply
-          .code(401)
-          .send({ message: "Invalid username or password" });
+      if (!result) throw unauthorized("Invalid username or password");
       return reply.code(200).send({
         accessToken: result.token,
         tokenType: "Bearer",
@@ -33,10 +31,14 @@ export default async function authRoutes(app: FastifyInstance) {
     },
   );
 
-  r.post("/api/auth/logout", { onRequest: requireAdmin }, async (req, reply) => {
-    await authService.logout(req.admin!.token);
-    return reply.code(204).send();
-  });
+  r.post(
+    "/api/auth/logout",
+    { onRequest: requireAdmin },
+    async (req, reply) => {
+      await authService.logout(req.admin!.token);
+      return reply.code(204).send();
+    },
+  );
 
   r.put(
     "/api/auth/password",
@@ -47,10 +49,7 @@ export default async function authRoutes(app: FastifyInstance) {
         req.body.currentPassword,
         req.body.newPassword,
       );
-      if (!ok)
-        return reply
-          .code(403)
-          .send({ message: "Current password is incorrect" });
+      if (!ok) throw forbidden("Current password is incorrect");
       return reply.code(204).send();
     },
   );
