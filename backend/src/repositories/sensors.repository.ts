@@ -1,6 +1,8 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.ts";
-import { sensors } from "../db/schema.ts";
+import { sensors, type Sensor } from "../db/schema.ts";
+
+export type SensorRow = Omit<Sensor, "apiKeyHash">;
 
 const publicColumns = {
   id: sensors.id,
@@ -9,44 +11,26 @@ const publicColumns = {
   createdAt: sensors.createdAt,
 };
 
-type SensorPublic = {
-  id: number;
-  name: string;
-  seriesId: number;
-  createdAt: string;
-};
-
-const toPublic = (row: {
-  id: number;
-  name: string;
-  seriesId: number;
-  createdAt: Date;
-}): SensorPublic => ({ ...row, createdAt: row.createdAt.toISOString() });
-
 export const sensorsRepository = {
-  findAll: (): Promise<SensorPublic[]> =>
-    db
-      .select(publicColumns)
-      .from(sensors)
-      .then((rows) => rows.map(toPublic)),
+  findAll: (): Promise<SensorRow[]> => db.select(publicColumns).from(sensors),
 
-  findById: (id: number): Promise<SensorPublic | undefined> =>
+  findById: (id: number): Promise<SensorRow | undefined> =>
     db
       .select(publicColumns)
       .from(sensors)
       .where(eq(sensors.id, id))
-      .then((rows) => (rows[0] ? toPublic(rows[0]) : undefined)),
+      .then((rows) => rows[0]),
 
   insert: (values: {
     name: string;
     seriesId: number;
     apiKeyHash: string;
-  }): Promise<SensorPublic> =>
+  }): Promise<SensorRow> =>
     db
       .insert(sensors)
       .values(values)
       .returning(publicColumns)
-      .then((rows) => toPublic(rows[0])),
+      .then((rows) => rows[0]),
 
   delete: (id: number): Promise<boolean> =>
     db
