@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { generateApiKey, sha256 } from "../lib/crypto.ts";
+import { unprocessable } from "../lib/problem.ts";
 import {
   sensorsRepository,
   type SensorRow,
@@ -24,12 +25,9 @@ export const sensorsService = {
     return row ? toPublic(row) : null;
   },
 
-  create: async (
-    name: string,
-    seriesId: number,
-  ): Promise<SensorCreated | null> => {
+  create: async (name: string, seriesId: number): Promise<SensorCreated> => {
     const series = await seriesRepository.findById(seriesId);
-    if (!series) return null;
+    if (!series) throw unprocessable("Series does not exist");
     const apiKey = generateApiKey();
     const created = await sensorsRepository.insert({
       name,

@@ -2,10 +2,10 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { requireAdmin } from "../lib/auth.ts";
-import { seriesRepository } from "../repositories/series.repository.ts";
+import { seriesService } from "../services/series.service.ts";
 import { SeriesInputDto, SeriesDto, SeriesParamsDto } from "../dto/series.ts";
 import { ProblemDto } from "../dto/common.ts";
-import { notFound, unprocessable } from "../lib/problem.ts";
+import { notFound } from "../lib/problem.ts";
 
 export default async function seriesRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
@@ -13,7 +13,7 @@ export default async function seriesRoutes(app: FastifyInstance) {
   r.get(
     "/api/series",
     { schema: { response: { 200: z.array(SeriesDto) } } },
-    async () => seriesRepository.findAll(),
+    async () => seriesService.list(),
   );
 
   r.get(
@@ -25,7 +25,7 @@ export default async function seriesRoutes(app: FastifyInstance) {
       },
     },
     async (req) => {
-      const found = await seriesRepository.findById(req.params.seriesId);
+      const found = await seriesService.getById(req.params.seriesId);
       if (!found) throw notFound("Series not found");
       return found;
     },
@@ -41,9 +41,7 @@ export default async function seriesRoutes(app: FastifyInstance) {
       },
     },
     async (req, reply) => {
-      if (req.body.minValue >= req.body.maxValue)
-        throw unprocessable("minValue must be less than maxValue");
-      const created = await seriesRepository.insert(req.body);
+      const created = await seriesService.create(req.body);
       return reply
         .code(201)
         .header("Location", `/api/series/${created.id}`)
@@ -67,13 +65,7 @@ export default async function seriesRoutes(app: FastifyInstance) {
       },
     },
     async (req) => {
-      if (req.body.minValue >= req.body.maxValue)
-        throw unprocessable("minValue must be less than maxValue");
-      // ponytail: 409 gdy nowy przedział wyklucza istniejące wyniki — dopięte, gdy powstanie tabela measurements
-      const updated = await seriesRepository.update(
-        req.params.seriesId,
-        req.body,
-      );
+      const updated = await seriesService.update(req.params.seriesId, req.body);
       if (!updated) throw notFound("Series not found");
       return updated;
     },
@@ -83,7 +75,7 @@ export default async function seriesRoutes(app: FastifyInstance) {
     "/api/series/:seriesId",
     { onRequest: requireAdmin, schema: { params: SeriesParamsDto } },
     async (req, reply) => {
-      const deleted = await seriesRepository.delete(req.params.seriesId);
+      const deleted = await seriesService.delete(req.params.seriesId);
       if (!deleted) throw notFound("Series not found");
       return reply.code(204).send();
     },

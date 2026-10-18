@@ -10,7 +10,7 @@ import {
   SensorParamsDto,
 } from "../dto/sensors.ts";
 import { ProblemDto } from "../dto/common.ts";
-import { notFound, unprocessable } from "../lib/problem.ts";
+import { notFound } from "../lib/problem.ts";
 
 export default async function sensorsRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
@@ -54,7 +54,6 @@ export default async function sensorsRoutes(app: FastifyInstance) {
         req.body.name,
         req.body.seriesId,
       );
-      if (!created) throw unprocessable("Series does not exist");
       return reply
         .code(201)
         .header("Location", `/api/sensors/${created.id}`)
