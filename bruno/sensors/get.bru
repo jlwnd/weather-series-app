@@ -1,0 +1,20 @@
+meta {
+  name: Get sensor
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/sensors/{{sensorId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq {{sensorId}}
+  res.body.apiKey: isUndefined
+}

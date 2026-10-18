@@ -1,0 +1,35 @@
+meta {
+  name: Create sensor
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/sensors
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Czujnik Warszawa",
+    "seriesId": {{seriesId}}
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.headers.location: isDefined
+  res.body.apiKey: isDefined
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("sensorId", res.getBody().id);
+    bru.setVar("apiKey", res.getBody().apiKey);
+  }
+}
