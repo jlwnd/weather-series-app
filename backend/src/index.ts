@@ -8,6 +8,7 @@ import { registerErrorHandling } from "./lib/problem.ts";
 import healthRoutes from "./routes/health.ts";
 import authRoutes from "./routes/auth.ts";
 import seriesRoutes from "./routes/series.ts";
+import sensorsRoutes from "./routes/sensors.ts";
 
 const app = Fastify({ logger: true });
 
@@ -19,6 +20,7 @@ registerErrorHandling(app);
 await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(seriesRoutes);
+await app.register(sensorsRoutes);
 
 await ensureAdmin();
 

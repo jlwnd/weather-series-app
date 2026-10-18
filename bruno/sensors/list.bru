@@ -1,0 +1,18 @@
+meta {
+  name: List sensors
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/sensors
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
