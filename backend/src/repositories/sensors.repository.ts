@@ -21,6 +21,15 @@ export const sensorsRepository = {
       .where(eq(sensors.id, id))
       .then((rows) => rows[0]),
 
+  findByApiKeyHash: (
+    apiKeyHash: string,
+  ): Promise<{ id: number; seriesId: number } | undefined> =>
+    db
+      .select({ id: sensors.id, seriesId: sensors.seriesId })
+      .from(sensors)
+      .where(eq(sensors.apiKeyHash, apiKeyHash))
+      .then((rows) => rows[0]),
+
   insert: (values: {
     name: string;
     seriesId: number;

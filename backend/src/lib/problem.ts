@@ -11,6 +11,7 @@ const TITLES: Record<number, string> = {
   401: "Unauthorized",
   403: "Forbidden",
   404: "Not Found",
+  409: "Conflict",
   422: "Unprocessable Entity",
   500: "Internal Server Error",
 };
@@ -31,6 +32,7 @@ export class ProblemError extends Error {
 export const unauthorized = (detail?: string) => new ProblemError(401, detail);
 export const forbidden = (detail?: string) => new ProblemError(403, detail);
 export const notFound = (detail?: string) => new ProblemError(404, detail);
+export const conflict = (detail?: string) => new ProblemError(409, detail);
 export const unprocessable = (detail?: string) => new ProblemError(422, detail);
 
 function sendProblem(

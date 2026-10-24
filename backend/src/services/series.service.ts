@@ -1,5 +1,6 @@
 import { seriesRepository } from "../repositories/series.repository.ts";
-import { unprocessable } from "../lib/problem.ts";
+import { measurementsRepository } from "../repositories/measurements.repository.ts";
+import { conflict, unprocessable } from "../lib/problem.ts";
 import type { Series } from "../db/schema.ts";
 
 type SeriesInput = Omit<Series, "id">;
@@ -20,9 +21,19 @@ export const seriesService = {
     return seriesRepository.insert(input);
   },
 
-  update: (id: number, input: SeriesInput): Promise<Series | undefined> => {
+  update: async (
+    id: number,
+    input: SeriesInput,
+  ): Promise<Series | undefined> => {
     assertRange(input);
-    // ponytail: 409 gdy nowy przedział wyklucza istniejące wyniki — dopięte, gdy powstanie tabela measurements
+    if (
+      await measurementsRepository.existsOutsideRange(
+        id,
+        input.minValue,
+        input.maxValue,
+      )
+    )
+      throw conflict("New range excludes existing measurements");
     return seriesRepository.update(id, input);
   },
 

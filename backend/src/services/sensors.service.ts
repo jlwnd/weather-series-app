@@ -38,4 +38,9 @@ export const sensorsService = {
   },
 
   delete: (id: number): Promise<boolean> => sensorsRepository.delete(id),
+
+  verifyApiKey: (
+    apiKey: string,
+  ): Promise<{ id: number; seriesId: number } | undefined> =>
+    sensorsRepository.findByApiKeyHash(sha256(apiKey)),
 };

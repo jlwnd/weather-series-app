@@ -1,0 +1,26 @@
+meta {
+  name: Create measurement - out of range (422)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/measurements
+  body: json
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+body:json {
+  {
+    "value": 999,
+    "timestamp": "2026-01-10T10:00:00Z"
+  }
+}
+
+assert {
+  res.status: eq 422
+}

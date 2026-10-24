@@ -1,0 +1,15 @@
+meta {
+  name: Get measurement
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/measurements/{{measurementId}}
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq {{measurementId}}
+}

@@ -1,0 +1,19 @@
+meta {
+  name: List measurements
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/measurements?series={{seriesId}}&sort=timestamp
+  auth: none
+}
+
+params:query {
+  series: {{seriesId}}
+  sort: timestamp
+}
+
+assert {
+  res.status: eq 200
+}
