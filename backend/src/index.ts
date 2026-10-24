@@ -9,6 +9,7 @@ import healthRoutes from "./routes/health.ts";
 import authRoutes from "./routes/auth.ts";
 import seriesRoutes from "./routes/series.ts";
 import sensorsRoutes from "./routes/sensors.ts";
+import measurementsRoutes from "./routes/measurements.ts";
 
 const app = Fastify({ logger: true });
 
@@ -21,6 +22,7 @@ await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(seriesRoutes);
 await app.register(sensorsRoutes);
+await app.register(measurementsRoutes);
 
 await ensureAdmin();
 
