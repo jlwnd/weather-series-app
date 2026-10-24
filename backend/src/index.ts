@@ -16,6 +16,21 @@ const app = Fastify({ logger: true });
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+app.removeContentTypeParser("text/plain");
+
+app.addHook("onRequest", (req, reply, done) => {
+  const accept = req.headers.accept;
+  if (accept && !/\*\/\*|application\/(json|problem\+json)/.test(accept)) {
+    reply.code(406).type("application/problem+json").send({
+      type: "about:blank",
+      title: "Not Acceptable",
+      status: 406,
+    });
+    return;
+  }
+  done();
+});
+
 registerErrorHandling(app);
 
 await app.register(healthRoutes);
