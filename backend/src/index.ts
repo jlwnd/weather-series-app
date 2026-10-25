@@ -1,4 +1,8 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import Fastify from "fastify";
+import helmet from "@fastify/helmet";
+import fastifyStatic from "@fastify/static";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -20,7 +24,11 @@ app.removeContentTypeParser("text/plain");
 
 app.addHook("onRequest", (req, reply, done) => {
   const accept = req.headers.accept;
-  if (accept && !/\*\/\*|application\/(json|problem\+json)/.test(accept)) {
+  if (
+    req.url.startsWith("/api") &&
+    accept &&
+    !/\*\/\*|application\/(json|problem\+json)/.test(accept)
+  ) {
     reply.code(406).type("application/problem+json").send({
       type: "about:blank",
       title: "Not Acceptable",
@@ -31,6 +39,8 @@ app.addHook("onRequest", (req, reply, done) => {
   done();
 });
 
+await app.register(helmet);
+
 registerErrorHandling(app);
 
 await app.register(healthRoutes);
@@ -38,6 +48,13 @@ await app.register(authRoutes);
 await app.register(seriesRoutes);
 await app.register(sensorsRoutes);
 await app.register(measurementsRoutes);
+
+const frontendDist = fileURLToPath(
+  new URL("../../frontend/dist", import.meta.url),
+);
+if (existsSync(frontendDist)) {
+  await app.register(fastifyStatic, { root: frontendDist });
+}
 
 await ensureAdmin();
 
