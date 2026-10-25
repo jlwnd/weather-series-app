@@ -1,0 +1,12 @@
+{
+  "name": "weather-series-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed": "node --env-file=../.env seed.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5"
+  }
+}
