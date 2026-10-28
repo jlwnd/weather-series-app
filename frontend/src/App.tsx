@@ -1,8 +1,11 @@
 import { useSeries } from "./hooks/useSeries";
 import { useMeasurements } from "./hooks/useMeasurements";
+import { useLatestTimestamp } from "./hooks/useLatestTimestamp";
 import { useSeriesVisibility } from "./hooks/useSeriesVisibility";
+import { rangeBounds, useTimeRange } from "./hooks/useTimeRange";
 import { TopBar } from "./components/TopBar";
 import { SeriesChips } from "./components/SeriesChips";
+import { TimeRangeControls } from "./components/TimeRangeControls";
 import { TemperatureChart } from "./components/TemperatureChart";
 import "./App.css";
 
@@ -12,8 +15,13 @@ function errMsg(e: unknown) {
 
 function App() {
   const { hidden, toggle } = useSeriesVisibility();
+  const range = useTimeRange();
   const series = useSeries();
-  const measurements = useMeasurements();
+
+  const latest = useLatestTimestamp();
+  const { from, to } = rangeBounds(range.preset, range.custom, latest.data ?? 0);
+  const ready = range.preset === "custom" || latest.isSuccess;
+  const measurements = useMeasurements(from, to, ready);
 
   return (
     <div className="app">
@@ -33,7 +41,13 @@ function App() {
 
         {series.isSuccess && (
           <>
-            <section className="panel" aria-label="Filtry">
+            <section className="panel filters" aria-label="Filtry">
+              <TimeRangeControls
+                preset={range.preset}
+                custom={range.custom}
+                onPreset={range.setPreset}
+                onCustom={range.setCustom}
+              />
               <SeriesChips
                 series={series.data}
                 hidden={hidden}

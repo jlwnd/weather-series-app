@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 
-// Tracks which series are toggled OFF; empty set = all visible.
 export function useSeriesVisibility() {
   const [hidden, setHidden] = useState<Set<number>>(new Set());
 

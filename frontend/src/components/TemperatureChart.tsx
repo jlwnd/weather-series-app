@@ -10,7 +10,6 @@ import {
 } from "recharts";
 import type { Measurement, Series } from "../types";
 
-// Series are distinguished by line style as well as colour (WCAG: not colour alone).
 const DASH = [undefined, "6 4", "2 4", "8 4 2 4"];
 
 type Row = { timestamp: string; [seriesId: number]: number | string };
@@ -89,7 +88,6 @@ export function TemperatureChart({
             name={s.name}
             stroke={s.color}
             strokeWidth={2}
-            // stable dash per series, independent of which are toggled on
             strokeDasharray={DASH[series.indexOf(s) % DASH.length]}
             dot={false}
             connectNulls
