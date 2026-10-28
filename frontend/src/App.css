@@ -91,6 +91,69 @@
   padding: 48px 20px;
 }
 
+/* hints */
+.hint {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.hint-error {
+  color: var(--danger);
+}
+
+/* series chips */
+.chips {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chips-legend {
+  padding: 0;
+  margin-right: 4px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.chip-on {
+  color: var(--text-strong);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.chip-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.chip:not(.chip-on) .chip-swatch {
+  opacity: 0.4;
+}
+
 @media (max-width: 560px) {
   .topbar {
     padding: 12px 14px;
