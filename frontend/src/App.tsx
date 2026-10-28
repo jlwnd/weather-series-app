@@ -1,91 +1,61 @@
-import { useEffect, useState } from "react";
-import { CloudSun } from "lucide-react";
-import { getSeries, type Series } from "./api";
+import { useSeries } from "./hooks/useSeries";
+import { useMeasurements } from "./hooks/useMeasurements";
+import { useSeriesVisibility } from "./hooks/useSeriesVisibility";
+import { TopBar } from "./components/TopBar";
+import { SeriesChips } from "./components/SeriesChips";
+import { TemperatureChart } from "./components/TemperatureChart";
 import "./App.css";
 
+function errMsg(e: unknown) {
+  return e instanceof Error ? e.message : "Nieznany błąd";
+}
+
 function App() {
-  const [series, setSeries] = useState<Series[]>([]);
-  const [visible, setVisible] = useState<Set<number>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getSeries()
-      .then((data) => {
-        setSeries(data);
-        setVisible(new Set(data.map((s) => s.id)));
-      })
-      .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : "Nieznany błąd"),
-      )
-      .finally(() => setLoading(false));
-  }, []);
-
-  function toggle(id: number) {
-    setVisible((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
+  const { hidden, toggle } = useSeriesVisibility();
+  const series = useSeries();
+  const measurements = useMeasurements();
 
   return (
     <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <CloudSun size={16} strokeWidth={2.2} />
-          </span>
-          <span className="brand-name">WeatherSeries</span>
-        </div>
-        <button type="button" className="btn btn-primary">
-          Zaloguj
-        </button>
-      </header>
+      <TopBar />
 
       <main className="main">
         <div className="page-head">
           <h1>Temperatura w miastach</h1>
         </div>
 
-        {loading && <p className="hint">Ładowanie serii…</p>}
-        {error && (
+        {series.isPending && <p className="hint">Ładowanie serii…</p>}
+        {series.isError && (
           <p className="hint hint-error" role="alert">
-            Nie udało się pobrać serii: {error}
+            Nie udało się pobrać serii: {errMsg(series.error)}
           </p>
         )}
 
-        {!loading && !error && (
-          <section className="panel" aria-label="Filtry">
-            <fieldset className="chips">
-              <legend className="chips-legend">Serie</legend>
-              {series.map((s) => {
-                const on = visible.has(s.id);
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`chip${on ? " chip-on" : ""}`}
-                    aria-pressed={on}
-                    onClick={() => toggle(s.id)}
-                  >
-                    <span
-                      className="chip-swatch"
-                      style={{ background: s.color }}
-                      aria-hidden="true"
-                    />
-                    {s.name}
-                  </button>
-                );
-              })}
-            </fieldset>
-          </section>
-        )}
+        {series.isSuccess && (
+          <>
+            <section className="panel" aria-label="Filtry">
+              <SeriesChips
+                series={series.data}
+                hidden={hidden}
+                onToggle={toggle}
+              />
+            </section>
 
-        <section className="panel placeholder" aria-label="Zawartość w budowie">
-          <p>Wykres i tabela pojawią się tutaj.</p>
-        </section>
+            <section className="panel" aria-label="Wykres temperatury">
+              {measurements.isError ? (
+                <p className="hint hint-error" role="alert">
+                  Nie udało się pobrać pomiarów: {errMsg(measurements.error)}
+                </p>
+              ) : (
+                <TemperatureChart
+                  series={series.data}
+                  hidden={hidden}
+                  measurements={measurements.data ?? []}
+                />
+              )}
+            </section>
+          </>
+        )}
       </main>
     </div>
   );
