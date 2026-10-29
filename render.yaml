@@ -7,6 +7,10 @@ services:
     buildCommand: npm ci && npm --prefix ../frontend ci && npm --prefix ../frontend run build && npm run migrate:prod
     startCommand: npm start
     healthCheckPath: /api/health
+    buildFilter:
+      paths:
+        - "backend/**"
+        - "frontend/**"
     envVars:
       - key: NODE_VERSION
         value: "24"

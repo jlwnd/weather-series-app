@@ -40,7 +40,7 @@ git push origin main
    serwisu. Inicjalizacja konta administratora (na podstawie zmiennych `ADMIN_*`)
    następuje podczas startu serwera i jest idempotentna.
 
-Adres aplikacji: `https://weather-series-app-backend.onrender.com`
+Adres aplikacji: `https://weather-timeseries-app-whu4.onrender.com`
 (lub adres nadany przez platformę Render).
 
 > Plan darmowy usypia serwis po około 15 minutach bezczynności; pierwsze żądanie
@@ -55,7 +55,7 @@ aplikacji:
 
 ```bash
 # w katalogu generator/
-node seed.ts --api https://weather-series-app-backend.onrender.com --user <login> --pass <hasło>
+node seed.ts --api https://weather-timeseries-app-whu4.onrender.com --user <login> --pass <hasło>
 ```
 
 Skrypt loguje administratora, tworzy cztery serie pomiarowe (Warszawa, Funchal,
@@ -65,7 +65,7 @@ rzeczywistymi temperaturami pobranymi z usługi Open-Meteo.
 ## 5. Weryfikacja
 
 ```bash
-node "zai-tests.mjs" --app https://weather-series-app-backend.onrender.com --user <login> --pass <hasło> --stage E1
+node "zai-tests.mjs" --app https://weather-timeseries-app-whu4.onrender.com --user <login> --pass <hasło> --stage E1
 ```
 
 Po wykonaniu skryptu seed etap E1 powinien zakończyć się wynikiem **10/10**.
