@@ -1,122 +1,100 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useMemo, useState } from "react";
+import { useSeries } from "./hooks/useSeries";
+import { useMeasurements } from "./hooks/useMeasurements";
+import { useLatestTimestamp } from "./hooks/useLatestTimestamp";
+import { useSeriesVisibility } from "./hooks/useSeriesVisibility";
+import { rangeBounds, useTimeRange } from "./hooks/useTimeRange";
+import { pivot } from "./lib/rows";
+import { TopBar } from "./components/TopBar";
+import { SeriesChips } from "./components/SeriesChips";
+import { TimeRangeControls } from "./components/TimeRangeControls";
+import { TemperatureChart } from "./components/TemperatureChart";
+import { TemperatureTable } from "./components/TemperatureTable";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function errMsg(e: unknown) {
+  return e instanceof Error ? e.message : "Nieznany błąd";
 }
 
-export default App
+function App() {
+  const { hidden, toggle } = useSeriesVisibility();
+  const range = useTimeRange();
+  const series = useSeries();
+
+  const latest = useLatestTimestamp();
+  const { from, to } = rangeBounds(range.preset, range.custom, latest.data ?? 0);
+  const ready = range.preset === "custom" || latest.isSuccess;
+  const measurements = useMeasurements(from, to, ready);
+
+  const rows = useMemo(() => pivot(measurements.data ?? []), [measurements.data]);
+  const [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <div className="app">
+      <TopBar />
+
+      <main className="main">
+        <div className="page-head">
+          <h1>Temperatura w miastach</h1>
+        </div>
+
+        {series.isPending && <p className="hint">Ładowanie serii…</p>}
+        {series.isError && (
+          <p className="hint hint-error" role="alert">
+            Nie udało się pobrać serii: {errMsg(series.error)}
+          </p>
+        )}
+
+        {series.isSuccess && (
+          <>
+            <section className="panel filters" aria-label="Filtry">
+              <TimeRangeControls
+                preset={range.preset}
+                custom={range.custom}
+                onPreset={range.setPreset}
+                onCustom={range.setCustom}
+              />
+              <SeriesChips
+                series={series.data}
+                hidden={hidden}
+                onToggle={toggle}
+              />
+            </section>
+
+            {measurements.isError ? (
+              <section className="panel" aria-label="Wykres temperatury">
+                <p className="hint hint-error" role="alert">
+                  Nie udało się pobrać pomiarów: {errMsg(measurements.error)}
+                </p>
+              </section>
+            ) : (
+              <>
+                <section className="panel" aria-label="Wykres temperatury">
+                  <TemperatureChart
+                    series={series.data}
+                    hidden={hidden}
+                    rows={rows}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                </section>
+
+                <section className="panel" aria-label="Tabela pomiarów">
+                  <TemperatureTable
+                    series={series.data}
+                    hidden={hidden}
+                    rows={rows}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                </section>
+              </>
+            )}
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;
