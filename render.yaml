@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: weather-series-app-backend
+    name: weather-timeseries-app
     runtime: node
     plan: free
     rootDir: backend
