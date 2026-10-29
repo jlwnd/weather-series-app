@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../auth/context";
 import { Modal } from "./Modal";
+import { Button } from "./ui/Button";
+import { Field } from "./ui/Field";
 
 export function LoginDialog({
   open,
@@ -39,45 +41,36 @@ export function LoginDialog({
       titleId="login-title"
     >
       <form className="form" onSubmit={submit}>
-        <label className="field">
-          <span>Nazwa użytkownika</span>
-          <input
-            name="username"
-            autoComplete="username"
-            required
-            autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>Hasło</span>
-          <input
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
+        <Field
+          label="Nazwa użytkownika"
+          name="username"
+          autoComplete="username"
+          required
+          autoFocus
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <Field
+          label="Hasło"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
         {error && (
           <p className="hint hint-error" role="alert">
             {error}
           </p>
         )}
         <div className="form-actions">
-          <button
-            type="button"
-            className="btn"
-            onClick={onClose}
-            disabled={loading}
-          >
+          <Button onClick={onClose} disabled={loading}>
             Anuluj
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          </Button>
+          <Button type="submit" variant="primary" disabled={loading}>
             {loading ? "Logowanie…" : "Zaloguj"}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>
