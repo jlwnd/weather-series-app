@@ -1,12 +1,15 @@
+import { useMemo, useState } from "react";
 import { useSeries } from "./hooks/useSeries";
 import { useMeasurements } from "./hooks/useMeasurements";
 import { useLatestTimestamp } from "./hooks/useLatestTimestamp";
 import { useSeriesVisibility } from "./hooks/useSeriesVisibility";
 import { rangeBounds, useTimeRange } from "./hooks/useTimeRange";
+import { pivot } from "./lib/rows";
 import { TopBar } from "./components/TopBar";
 import { SeriesChips } from "./components/SeriesChips";
 import { TimeRangeControls } from "./components/TimeRangeControls";
 import { TemperatureChart } from "./components/TemperatureChart";
+import { TemperatureTable } from "./components/TemperatureTable";
 import "./App.css";
 
 function errMsg(e: unknown) {
@@ -22,6 +25,9 @@ function App() {
   const { from, to } = rangeBounds(range.preset, range.custom, latest.data ?? 0);
   const ready = range.preset === "custom" || latest.isSuccess;
   const measurements = useMeasurements(from, to, ready);
+
+  const rows = useMemo(() => pivot(measurements.data ?? []), [measurements.data]);
+  const [selected, setSelected] = useState<string | null>(null);
 
   return (
     <div className="app">
@@ -55,19 +61,35 @@ function App() {
               />
             </section>
 
-            <section className="panel" aria-label="Wykres temperatury">
-              {measurements.isError ? (
+            {measurements.isError ? (
+              <section className="panel" aria-label="Wykres temperatury">
                 <p className="hint hint-error" role="alert">
                   Nie udało się pobrać pomiarów: {errMsg(measurements.error)}
                 </p>
-              ) : (
-                <TemperatureChart
-                  series={series.data}
-                  hidden={hidden}
-                  measurements={measurements.data ?? []}
-                />
-              )}
-            </section>
+              </section>
+            ) : (
+              <>
+                <section className="panel" aria-label="Wykres temperatury">
+                  <TemperatureChart
+                    series={series.data}
+                    hidden={hidden}
+                    rows={rows}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                </section>
+
+                <section className="panel" aria-label="Tabela pomiarów">
+                  <TemperatureTable
+                    series={series.data}
+                    hidden={hidden}
+                    rows={rows}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                </section>
+              </>
+            )}
           </>
         )}
       </main>

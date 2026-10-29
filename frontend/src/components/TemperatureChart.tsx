@@ -1,52 +1,31 @@
-import { useMemo } from "react";
 import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import type { Measurement, Series } from "../types";
+import type { Series } from "../types";
+import { fmtTime, type Row } from "../lib/rows";
 
 const DASH = [undefined, "6 4", "2 4", "8 4 2 4"];
-
-type Row = { timestamp: string; [seriesId: number]: number | string };
-
-function pivot(measurements: Measurement[]): Row[] {
-  const byTime = new Map<string, Row>();
-  for (const m of measurements) {
-    let row = byTime.get(m.timestamp);
-    if (!row) {
-      row = { timestamp: m.timestamp };
-      byTime.set(m.timestamp, row);
-    }
-    row[m.seriesId] = m.value;
-  }
-  return [...byTime.values()].sort((a, b) =>
-    a.timestamp.localeCompare(b.timestamp),
-  );
-}
-
-const fmtTick = (ts: string) =>
-  new Date(ts).toLocaleString("pl-PL", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 export function TemperatureChart({
   series,
   hidden,
-  measurements,
+  rows,
+  selected,
+  onSelect,
 }: {
   series: Series[];
   hidden: Set<number>;
-  measurements: Measurement[];
+  rows: Row[];
+  selected: string | null;
+  onSelect: (timestamp: string) => void;
 }) {
-  const rows = useMemo(() => pivot(measurements), [measurements]);
   const shown = series.filter((s) => !hidden.has(s.id));
 
   if (rows.length === 0) {
@@ -55,11 +34,18 @@ export function TemperatureChart({
 
   return (
     <ResponsiveContainer width="100%" height={360}>
-      <LineChart data={rows} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+      <LineChart
+        data={rows}
+        margin={{ top: 8, right: 16, bottom: 8, left: 0 }}
+        onClick={(state) => {
+          const label = state?.activeLabel;
+          if (label != null) onSelect(String(label));
+        }}
+      >
         <CartesianGrid stroke="#303136" vertical={false} />
         <XAxis
           dataKey="timestamp"
-          tickFormatter={fmtTick}
+          tickFormatter={fmtTime}
           minTickGap={48}
           tick={{ fill: "#8a8d94", fontSize: 12 }}
           stroke="#3a3b41"
@@ -71,7 +57,7 @@ export function TemperatureChart({
           unit="°"
         />
         <Tooltip
-          labelFormatter={(label) => fmtTick(String(label))}
+          labelFormatter={(label) => fmtTime(String(label))}
           contentStyle={{
             background: "#26272b",
             border: "1px solid #3a3b41",
@@ -80,6 +66,9 @@ export function TemperatureChart({
           }}
           labelStyle={{ color: "#8a8d94" }}
         />
+        {selected && (
+          <ReferenceLine x={selected} stroke="#f2f3f5" strokeDasharray="3 3" />
+        )}
         {shown.map((s) => (
           <Line
             key={s.id}
