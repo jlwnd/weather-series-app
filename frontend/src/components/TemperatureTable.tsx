@@ -3,7 +3,7 @@ import type { Series } from "../types";
 import { fmtTime, type Row } from "../lib/rows";
 
 const fmtVal = (v: number | string | undefined) =>
-  typeof v === "number" ? `${v.toFixed(1).replace(".", ",")}°` : "—";
+  typeof v === "number" ? `${v.toFixed(1).replace(".", ",")}°` : "-";
 
 export function TemperatureTable({
   series,

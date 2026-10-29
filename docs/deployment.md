@@ -14,7 +14,7 @@ zaktualizować gałąź `main`:
 git push origin main
 ```
 
-## 2. Baza danych — Neon
+## 2. Baza danych - Neon
 
 1. Należy założyć konto w usłudze https://neon.tech i utworzyć nowy projekt
    (zalecany region w Europie).
@@ -22,18 +22,18 @@ git push origin main
    parametr `?sslmode=require`), który zostanie wykorzystany jako wartość zmiennej
    `DATABASE_URL` w kroku 3.
 
-## 3. Serwis web — Render
+## 3. Serwis web - Render
 
 1. Należy założyć konto w usłudze https://render.com i połączyć je z kontem GitHub.
 2. Po wybraniu opcji **New → Blueprint** i wskazaniu repozytorium `weather-series-app`
    platforma odczytuje plik `render.yaml` i tworzy serwis `weather-series-app-backend`
    (środowisko Node 24, katalog `rootDir: backend`).
 3. Zmienne środowiskowe należy skonfigurować ręcznie w zakładce **Environment**
-   serwisu — nie są one zadeklarowane w pliku `render.yaml`, w związku z czym platforma
+   serwisu - nie są one zadeklarowane w pliku `render.yaml`, w związku z czym platforma
    nie wyświetli monitu o ich uzupełnienie:
-   - `DATABASE_URL` — connection string z usługi Neon,
-   - `ADMIN_USERNAME` — login testowego konta administratora,
-   - `ADMIN_PASSWORD` — hasło testowego konta administratora.
+   - `DATABASE_URL` - connection string z usługi Neon,
+   - `ADMIN_USERNAME` - login testowego konta administratora,
+   - `ADMIN_PASSWORD` - hasło testowego konta administratora.
 4. Po wybraniu opcji **Apply / Deploy** polecenie `buildCommand` instaluje zależności
    backendu oraz frontendu, buduje aplikację SPA i uruchamia migracje bazy danych
    (`npm run migrate:prod`), natomiast health check `/api/health` potwierdza gotowość

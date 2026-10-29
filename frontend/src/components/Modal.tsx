@@ -6,10 +6,18 @@ type Props = {
   onClose: () => void;
   title: string;
   titleId: string;
+  size?: "md" | "lg";
   children: ReactNode;
 };
 
-export function Modal({ open, onClose, title, titleId, children }: Props) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  titleId,
+  size = "md",
+  children,
+}: Props) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -22,7 +30,7 @@ export function Modal({ open, onClose, title, titleId, children }: Props) {
   return (
     <dialog
       ref={ref}
-      className="modal"
+      className={size === "lg" ? "modal modal-lg" : "modal"}
       aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
